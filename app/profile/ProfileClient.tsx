@@ -122,7 +122,7 @@ export function ProfileClient({ profile }: { profile: MyProfile }) {
           <div className="profile-toggle-grid">
             <ToggleRow checked={settings.dm} label="DM" onChange={(checked) => setSettings((current) => ({ ...current, dm: checked }))} />
             <ToggleRow checked={settings.star} label="관심" onChange={(checked) => setSettings((current) => ({ ...current, star: checked }))} />
-            <ToggleRow checked={settings.portfolioView} label="포트폴리오 조회" onChange={(checked) => setSettings((current) => ({ ...current, portfolioView: checked }))} />
+            <ToggleRow checked={settings.portfolioView} label="모음 조회" onChange={(checked) => setSettings((current) => ({ ...current, portfolioView: checked }))} />
           </div>
         </section>
       </div>

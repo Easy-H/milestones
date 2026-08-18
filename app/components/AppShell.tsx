@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 import { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-const navItems = [
+const primaryNavItems = [
   { href: "/goals", label: "대시보드" },
-  { href: "/goals/todo", label: "목표" },
-  { href: "/goals/wishlist", label: "하고싶은일" },
+  { href: "/goals/todo", label: "진행 중" },
+  { href: "/goals/wishlist", label: "하고 싶은 일" },
   { href: "/achievements", label: "성취" },
-  { href: "/portfolio", label: "포트폴리오" },
-  { href: "/dm", label: "DM" },
+  { href: "/portfolio", label: "모음" },
+  { href: "/portfolio/explore", label: "둘러보기" },
+  { href: "/dm", label: "메시지" },
+];
+
+const secondaryNavItems = [
   { href: "/profile", label: "프로필" },
-  { href: "/portfolio/layouts", label: "레이아웃" },
+  { href: "/profile?settings=1", label: "설정" },
 ];
 
 export function AppShell({
@@ -24,11 +28,10 @@ export function AppShell({
   children: ReactNode;
   contextTitle?: string;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    setCollapsed(localStorage.getItem("milestones-sidebar-collapsed") === "true");
-  }, []);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("milestones-sidebar-collapsed") === "true";
+  });
 
   const toggleSidebar = () => {
     setCollapsed((current) => {
@@ -49,7 +52,14 @@ export function AppShell({
         </div>
         {contextTitle ? <div className="sidebar-context-title">{contextTitle}</div> : null}
         <nav className="nav">
-          {navItems.map((item) => (
+          {primaryNavItems.map((item) => (
+            <Link className={active === item.label ? "nav-item active" : "nav-item"} href={item.href} key={item.href}>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <nav className="nav nav-bottom">
+          {secondaryNavItems.map((item) => (
             <Link className={active === item.label ? "nav-item active" : "nav-item"} href={item.href} key={item.href}>
               {item.label}
             </Link>
@@ -58,7 +68,7 @@ export function AppShell({
         <div className="sidebar-panel">
           <span>이번 달</span>
           <strong>성취 4</strong>
-          <small>목표 8 · 성취 3</small>
+          <small>진행 중 8 · 성취 3</small>
         </div>
         <button aria-label={collapsed ? "네비게이션 열기" : "네비게이션 닫기"} className="sidebar-toggle" onClick={toggleSidebar} type="button">
           {collapsed ? "›" : "‹"}

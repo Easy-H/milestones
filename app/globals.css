@@ -190,6 +190,10 @@ button {
   font-size: 13px;
 }
 
+.nav-bottom {
+  margin-top: auto;
+}
+
 .sidebar-panel span,
 small,
 p,
@@ -198,6 +202,7 @@ dt {
 }
 
 .workspace {
+  container: workspace / inline-size;
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -342,6 +347,31 @@ dt {
 .goal-toolbar .tabs {
   flex: 0 1 auto;
   margin-bottom: 0;
+}
+
+.status-radio-group {
+  min-width: 0;
+}
+
+.goal-list-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 10px;
+}
+
+.goal-list-header h2 {
+  flex: 0 0 auto;
+  font-size: 18px;
+}
+
+.goal-list-header .tabs {
+  margin-bottom: 0;
+}
+
+.dashboard-strip-head .header-search,
+.goal-list-header .header-search {
+  width: min(280px, 32vw);
 }
 
 .goal-toolbar .primary {
@@ -642,6 +672,12 @@ h3 {
   border-bottom-right-radius: 8px;
 }
 
+.goal-item:first-child,
+.goal-item:first-child .goal-summary {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
 .goal-item.open:last-child .goal-summary {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -654,7 +690,7 @@ h3 {
 
 .table-row {
   display: grid;
-  grid-template-columns: minmax(300px, 1.9fr) minmax(108px, 0.7fr) minmax(220px, 1fr) 100px 112px;
+  grid-template-columns: minmax(300px, 1.9fr) minmax(116px, 0.7fr) minmax(220px, 1fr) 100px;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -693,15 +729,30 @@ h3 {
   min-width: 0;
 }
 
+.goal-title-cell .status-cell {
+  flex: 0 0 auto;
+}
+
+.goal-title-cell .status-trigger {
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
 .disclosure-button,
 .add-inline-button,
 .edit-inline-button,
-.disclosure-spacer {
+.disclosure-spacer,
+.progress-disclosure {
   display: grid;
   place-items: center;
   width: 22px;
   height: 22px;
   flex: 0 0 22px;
+}
+
+.progress-disclosure {
+  position: relative;
 }
 
 .disclosure-button,
@@ -716,6 +767,39 @@ h3 {
 
 .goal-item.open .disclosure-button {
   transform: rotate(90deg);
+}
+
+.progress-disclosure .disclosure-button {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.progress-disclosure:hover .disclosure-button,
+.progress-disclosure:focus-within .disclosure-button {
+  background: white;
+  opacity: 1;
+}
+
+.progress-disclosure:hover .progress-dot,
+.progress-disclosure:focus-within .progress-dot {
+  opacity: 0;
+}
+
+.progress-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: conic-gradient(var(--blue) var(--progress), #e7ebf2 0);
+  position: relative;
+}
+
+.progress-dot::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: white;
 }
 
 .disclosure-button:hover,
@@ -1068,40 +1152,6 @@ h3 {
 .status.blue {
   background: var(--blue-soft);
   color: var(--blue);
-}
-
-.progress-cell {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 24px;
-}
-
-.title-progress {
-  flex: 0 0 auto;
-  margin-left: 4px;
-}
-
-.progress-cell i {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: conic-gradient(var(--blue) var(--progress), #e7ebf2 0);
-  position: relative;
-}
-
-.progress-cell i::after {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  background: white;
-}
-
-.progress-cell small {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .detail-card,
@@ -3070,8 +3120,10 @@ h3 {
 }
 
 .portfolio-create-card {
+  display: grid;
   align-content: center;
   justify-items: center;
+  gap: 10px;
   min-height: 210px;
   border-style: dashed;
   color: #525866;
@@ -3089,6 +3141,11 @@ h3 {
   color: var(--blue);
   font-size: 24px;
   font-weight: 800;
+}
+
+.portfolio-create-card > span {
+  margin: 0;
+  color: var(--blue);
 }
 
 .portfolio-create-card strong {
@@ -4569,7 +4626,18 @@ dd {
     display: none;
   }
 
-  .table-row,
+  .table-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title title title"
+      "type tags date";
+    align-items: start;
+    gap: 8px 10px;
+    min-width: 0;
+    min-height: 0;
+    padding: 12px;
+  }
+
   .achievement-row {
     grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas:
@@ -4597,6 +4665,106 @@ dd {
 
   .title-progress {
     margin-top: 1px;
+  }
+
+  .type-cell {
+    grid-area: type;
+    min-width: 0;
+  }
+
+  .due-cell,
+  .fixed-date-cell {
+    grid-area: date;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .status-cell {
+    grid-area: status;
+    justify-self: end;
+  }
+
+  .tag-cell {
+    grid-area: tags;
+    align-items: center;
+    width: auto;
+    min-width: 0;
+  }
+
+  .tag-cell .tags {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tag-cell .removable-tag {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .tag-cell .removable-tag span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-menu,
+  .type-menu,
+  .due-menu {
+    left: auto;
+    right: 0;
+  }
+
+  .type-menu {
+    left: 0;
+    right: auto;
+  }
+}
+
+@container workspace (max-width: 900px) {
+  .goal-list,
+  .achievement-table-card {
+    overflow-x: visible;
+  }
+
+  .table-head,
+  .achievement-head {
+    display: none;
+  }
+
+  .table-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "title title title"
+      "type tags date";
+    align-items: start;
+    gap: 8px 10px;
+    min-width: 0;
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .achievement-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "title title status"
+      "type tags date";
+    align-items: start;
+    gap: 8px 10px;
+    min-width: 0;
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .goal-title-cell,
+  .achievement-title-cell {
+    grid-area: title;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .goal-title-text,
+  .achievement-title-cell strong {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .type-cell {

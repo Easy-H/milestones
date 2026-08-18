@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Achievement, Portfolio, PortfolioLayout, UserPersona } from "@/lib/mockApi";
+import { Achievement, CollectionMilestone, Portfolio, PortfolioLayout, UserPersona } from "@/lib/mockApi";
 import { AchievementEditModal } from "../../../components/AchievementEditModal";
 import { AppShell } from "../../../components/AppShell";
 import { Modal } from "../../../components/Modal";
@@ -18,13 +18,13 @@ export function PortfolioEditor({
   personas,
   portfolio,
 }: {
-  achievements: Achievement[];
+  achievements: (Achievement | CollectionMilestone)[];
   layouts: PortfolioLayout[];
   personas: UserPersona[];
   portfolio: Portfolio;
 }) {
   const [editing, setEditing] = useState(false);
-  const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
+  const [editingAchievement, setEditingAchievement] = useState<(Achievement | CollectionMilestone) | null>(null);
   const [showEditChrome, setShowEditChrome] = useState(true);
   const [name, setName] = useState(portfolio.name);
   const [displayName, setDisplayName] = useState(portfolio.displayName);
@@ -160,7 +160,7 @@ export function PortfolioEditor({
   };
 
   return (
-    <AppShell active="포트폴리오" contextTitle={name}>
+    <AppShell active="모음" contextTitle={name}>
       <section className="page-section public-portfolio portfolio-edit-view">
         <PortfolioView
           achievements={visibleAchievements}
@@ -297,7 +297,7 @@ export function PortfolioEditor({
                   </div>
                 ) : null}
                 <div className="metadata-field">
-                  <span>성취 타입</span>
+                  <span>Milestone 타입</span>
                   <div className="metadata-choice-picker">
                     {ownedTypes.map((type) => (
                       <button
@@ -318,7 +318,7 @@ export function PortfolioEditor({
                   <label>텍스트<textarea onChange={(event) => setSectionTextDraft(event.target.value)} value={sectionTextDraft} /></label>
                 ) : (
                   <div className="metadata-field">
-                    <span>포함할 성취</span>
+                    <span>포함할 Milestone</span>
                     <div className="metadata-choice-picker tag-mode">
                       {ownedTags.map((tag) => (
                         <button
@@ -423,39 +423,6 @@ function PlacementRadio({
       >
         <span className="placement-icon placement-right" />
         오른쪽
-      </button>
-    </div>
-  );
-}
-
-function ItemLayoutRadio({
-  onChange,
-  value,
-}: {
-  onChange: (value: SectionItemLayout) => void;
-  value: SectionItemLayout;
-}) {
-  return (
-    <div className="alignment-radio two" role="radiogroup">
-      <button
-        aria-checked={value === "card"}
-        className={value === "card" ? "active" : ""}
-        onClick={() => onChange("card")}
-        role="radio"
-        type="button"
-      >
-        <span className="layout-choice-icon layout-card-icon" />
-        카드
-      </button>
-      <button
-        aria-checked={value === "app-icon"}
-        className={value === "app-icon" ? "active" : ""}
-        onClick={() => onChange("app-icon")}
-        role="radio"
-        type="button"
-      >
-        <span className="layout-choice-icon layout-app-icon" />
-        앱
       </button>
     </div>
   );

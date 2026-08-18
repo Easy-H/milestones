@@ -103,7 +103,7 @@ export function GoalsList({
     <>
       <div className="table-card goal-list">
         <div className="table-row table-head">
-          <span>목표명</span><span>타입</span><span>태그</span><span>목표일</span><span>상태</span>
+          <span>이름</span><span>타입</span><span>태그</span><span>목표일</span>
         </div>
         {listItems.filter((goal) => {
           if (!visibleGoalIds.includes(goal.id)) return false;
@@ -126,6 +126,12 @@ export function GoalsList({
           const currentName = goalNames[goal.id] ?? goal.name;
           const currentTags = goalTags[goal.id] ?? [];
           const currentGoal = { ...goal, due: currentDue, name: currentName, status: currentStatus, tags: currentTags, todos, type: currentType };
+          const selectStatus = (nextStatus: string) => {
+            setGoalStatuses((current) => ({ ...current, [goal.id]: nextStatus }));
+            if (normalizeGoalStatus(nextStatus) === "성취") {
+              setCompletionDraft(buildCompletionDraft({ ...currentGoal, status: "성취" }));
+            }
+          };
           const toggleTodo = (todoId: string, done: boolean) => {
             setGoalTodos((current) => ({
               ...current,
@@ -159,15 +165,22 @@ export function GoalsList({
               <div className="table-row goal-summary">
                 <span className="goal-title-cell">
                   {hasTodos ? (
-                    <button
-                      aria-expanded={isOpen}
-                      aria-label={`${goal.name} 하위 할 일`}
-                      className="disclosure-button"
-                      onClick={() => setOpenGoalId(isOpen ? null : goal.id)}
-                      type="button"
-                    >
-                      ▸
-                    </button>
+                    <span className="progress-disclosure">
+                      <span
+                        aria-label={`${currentName} 진행률 ${progress}%`}
+                        className="progress-dot"
+                        style={{ "--progress": `${progress}%` } as CSSProperties}
+                      />
+                      <button
+                        aria-expanded={isOpen}
+                        aria-label={`${currentName} 하위 할 일`}
+                        className="disclosure-button"
+                        onClick={() => setOpenGoalId(isOpen ? null : goal.id)}
+                        type="button"
+                      >
+                        ▸
+                      </button>
+                    </span>
                   ) : <span className="disclosure-spacer" />}
                   {editingGoalId === goal.id ? (
                     <input
@@ -187,6 +200,26 @@ export function GoalsList({
                   ) : (
                     <strong className="goal-title-text">{currentName}</strong>
                   )}
+                  <StatusDropdown
+                    active={currentStatusLabel === "진행중"}
+                    id={goal.id}
+                    isOpen={statusMenuGoalId === goal.id}
+                    onOpenChange={setStatusMenuGoalId}
+                    onSelect={selectStatus}
+                    options={["진행중", "성취", "하고싶은일"]}
+                    value={currentStatusLabel}
+                  >
+                    <button
+                      className="danger-menu-item"
+                      onClick={() => {
+                        setVisibleGoalIds((current) => current.filter((id) => id !== goal.id));
+                        setStatusMenuGoalId(null);
+                      }}
+                      type="button"
+                    >
+                      삭제
+                    </button>
+                  </StatusDropdown>
                   <button className="edit-link-button" onClick={() => setEditingGoalId(editingGoalId === goal.id ? null : goal.id)} type="button">
                     {editingGoalId === goal.id ? "완료" : "편집"}
                   </button>
@@ -201,12 +234,6 @@ export function GoalsList({
                   >
                     +
                   </button>
-                  {hasTodos ? (
-                    <span className="progress-cell title-progress">
-                      <i style={{ "--progress": `${progress}%` } as CSSProperties} />
-                      <small>{progress}%</small>
-                    </span>
-                  ) : null}
                 </span>
                 <span className="type-cell">
                   <button
@@ -218,7 +245,7 @@ export function GoalsList({
                   </button>
                   {typeMenuGoalId === goal.id ? (
                     <div className="status-menu type-menu">
-                      {["프로젝트", "대회 / 수상", "자격 / 인증", "지역 방문", "취미", "운동 / 도전", "자유 목표"].map((type) => (
+                      {["프로젝트", "대회 / 수상", "자격 / 인증", "운동 / 도전", "독서", "영화", "게임", "문화생활", "지역 방문", "여행", "기타"].map((type) => (
                         <button
                           key={type}
                           onClick={() => {
@@ -285,36 +312,6 @@ export function GoalsList({
                     </div>
                   ) : null}
                 </span>
-                <StatusDropdown
-                  active={currentStatusLabel === "목표"}
-                  id={goal.id}
-                  isOpen={statusMenuGoalId === goal.id}
-                  onOpenChange={setStatusMenuGoalId}
-                  onSelect={(status) => setGoalStatuses((current) => ({ ...current, [goal.id]: status }))}
-                  options={["목표", "하고싶은일"]}
-                  value={currentStatusLabel}
-                >
-                  <button
-                    onClick={() => {
-                      setGoalStatuses((current) => ({ ...current, [goal.id]: "성취" }));
-                      setCompletionDraft(buildCompletionDraft({ ...currentGoal, status: "성취" }));
-                      setStatusMenuGoalId(null);
-                    }}
-                    type="button"
-                  >
-                    달성
-                  </button>
-                  <button
-                    className="danger-menu-item"
-                    onClick={() => {
-                      setVisibleGoalIds((current) => current.filter((id) => id !== goal.id));
-                      setStatusMenuGoalId(null);
-                    }}
-                    type="button"
-                  >
-                    삭제
-                  </button>
-                </StatusDropdown>
               </div>
 
               {isOpen ? (
@@ -410,8 +407,9 @@ function getDetailValue(details: string[], key: string) {
 
 function normalizeAchievementStatus(status: string) {
   if (status === "활성" || status === "달성" || status === "성취한일" || status === "성취한 일") return "성취";
-  if (status === "숨김" || status === "진행 중" || status === "해야할일" || status === "해야할 일") return "목표";
-  if (status === "보류" || status === "하고 싶음" || status === "하고싶은 일") return "하고싶은일";
+  if (status === "숨김" || status === "진행중" || status === "진행 중" || status === "해야할일" || status === "해야할 일" || status === "목표" || status === "in_progress") return "진행중";
+  if (status === "paused" || status === "보류") return "보류";
+  if (status === "wishlist" || status === "하고 싶음" || status === "하고싶은 일") return "하고싶은일";
 
   return status;
 }
@@ -451,8 +449,9 @@ function buildGoalTodoSections(goal: Goal): CompletionDraft["sections"] {
 
 
 function normalizeGoalStatus(status: string) {
-  if (status === "진행 중" || status === "해야할 일" || status === "해야할일" || status === "목표") return "목표";
-  if (status === "하고 싶음" || status === "보류" || status === "하고싶은 일" || status === "하고싶은일") return "하고싶은일";
+  if (status === "진행중" || status === "진행 중" || status === "해야할 일" || status === "해야할일" || status === "목표" || status === "in_progress") return "진행중";
+  if (status === "paused" || status === "보류") return "보류";
+  if (status === "wishlist" || status === "하고 싶음" || status === "하고싶은 일" || status === "하고싶은일") return "하고싶은일";
   if (status === "달성" || status === "성취한 일" || status === "성취한일" || status === "성취") return "성취";
 
   return status;

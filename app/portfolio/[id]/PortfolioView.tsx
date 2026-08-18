@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import Link from "next/link";
-import { Achievement, UserPersona } from "@/lib/mockApi";
+import { Achievement, CollectionMilestone, UserPersona } from "@/lib/mockApi";
 import { Tag } from "../../components/AppShell";
 
 export type PortfolioSectionConfig = {
@@ -26,12 +26,12 @@ export function PortfolioView({
   sections,
   title,
 }: {
-  achievements: Achievement[];
+  achievements: (Achievement | CollectionMilestone)[];
   actions?: ReactNode;
   editControls?: {
     afterSections?: ReactNode;
     cover?: ReactNode;
-    achievements?: (achievement: Achievement) => ReactNode;
+    achievements?: (achievement: Achievement | CollectionMilestone) => ReactNode;
     sections?: (type: string) => ReactNode;
   };
   persona?: UserPersona;
@@ -106,25 +106,41 @@ export function PortfolioView({
               </div>
             ) : (
               <div className={section.itemLayout === "app-icon" ? "achievement-grid public-achievements app-icon-layout" : "achievement-grid public-achievements"}>
-                {items.length ? items.map((achievement) => (
-                  <Link
-                    className={section.itemLayout === "app-icon" ? "achievement-card linked-achievement-card portfolio-app-icon-card" : "achievement-card linked-achievement-card"}
-                    href={portfolioId ? `/portfolio/${portfolioId}/achievements/${achievement.type}/${achievement.id}` : `/achievements/${achievement.type}/${achievement.id}`}
-                    key={achievement.id}
-                  >
-                    {editControls?.achievements?.(achievement)}
-                    <div className="thumb">{achievement.mark}</div>
-                    {section.itemLayout === "app-icon" ? (
-                      <h3>{achievement.name}</h3>
-                    ) : (
-                      <div>
+                {items.length ? items.map((achievement) => {
+                  const isCompleted = !("milestoneStatus" in achievement) || achievement.milestoneStatus === "completed";
+                  const cardContent = (
+                    <>
+                      {editControls?.achievements?.(achievement)}
+                      <div className="thumb">{achievement.mark}</div>
+                      {section.itemLayout === "app-icon" ? (
                         <h3>{achievement.name}</h3>
-                        <p>{achievement.achievedAt}</p>
+                      ) : (
+                        <div>
+                          <h3>{achievement.name}</h3>
+                          <p>{achievement.status} · {achievement.achievedAt}</p>
                           <div className="tags">{achievement.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}</div>
-                      </div>
-                    )}
-                  </Link>
-                )) : <div className="portfolio-empty-section">조건에 맞는 성취 없음</div>}
+                        </div>
+                      )}
+                    </>
+                  );
+
+                  return isCompleted ? (
+                    <Link
+                      className={section.itemLayout === "app-icon" ? "achievement-card linked-achievement-card portfolio-app-icon-card" : "achievement-card linked-achievement-card"}
+                      href={portfolioId ? `/portfolio/${portfolioId}/achievements/${achievement.type}/${achievement.id}` : `/achievements/${achievement.type}/${achievement.id}`}
+                      key={achievement.id}
+                    >
+                      {cardContent}
+                    </Link>
+                  ) : (
+                    <article
+                      className={section.itemLayout === "app-icon" ? "achievement-card linked-achievement-card portfolio-app-icon-card" : "achievement-card linked-achievement-card"}
+                      key={achievement.id}
+                    >
+                      {cardContent}
+                    </article>
+                  );
+                }) : <div className="portfolio-empty-section">조건에 맞는 Milestone 없음</div>}
               </div>
             )}
           </section>
@@ -135,8 +151,8 @@ export function PortfolioView({
   );
 }
 
-function groupAchievementsByType(achievements: Achievement[]): [string, Achievement[]][] {
-  const grouped = achievements.reduce<Record<string, Achievement[]>>((acc, achievement) => {
+function groupAchievementsByType(achievements: (Achievement | CollectionMilestone)[]): [string, (Achievement | CollectionMilestone)[]][] {
+  const grouped = achievements.reduce<Record<string, (Achievement | CollectionMilestone)[]>>((acc, achievement) => {
     acc[achievement.type] = [...(acc[achievement.type] ?? []), achievement];
     return acc;
   }, {});

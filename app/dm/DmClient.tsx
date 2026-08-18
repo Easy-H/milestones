@@ -34,7 +34,7 @@ export function DmClient({ threads }: { threads: DirectMessageThread[] }) {
     <>
       <div className="portfolio-toolbar dm-toolbar">
         <h1>DM</h1>
-        <HeaderSearch onChange={setQuery} placeholder="이름, 회사, 포트폴리오 검색" value={query} />
+        <HeaderSearch onChange={setQuery} placeholder="이름, 회사, 모음 검색" value={query} />
         <div className="toolbar-right">
           <div className="tabs compact-tabs">
             {filters.map((filter) => (
@@ -86,13 +86,13 @@ export function DmClient({ threads }: { threads: DirectMessageThread[] }) {
                   {activeThread.starred ? "★" : "☆"}
                 </button>
                 <Link className="edit-link-button visible" href={`/portfolio/${activeThread.portfolioId}`}>
-                  포트폴리오
+                  모음
                 </Link>
               </div>
             </div>
 
             <div className="dm-context-card">
-              <span>포트폴리오</span>
+              <span>모음</span>
               <strong>{activeThread.portfolioName}</strong>
               <small>{activeThread.status}</small>
             </div>

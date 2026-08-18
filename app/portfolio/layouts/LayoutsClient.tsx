@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Achievement, PortfolioLayout } from "@/lib/mockApi";
 import { AppShell, Tag } from "../../components/AppShell";
@@ -32,14 +32,14 @@ export function LayoutsClient({
   });
   const selected = layouts.find((layout) => layout.id === previewId) ?? visibleLayouts[0] ?? layouts[0];
   const isIconPreview = selected?.display.includes("아이콘") ?? false;
-  const previewItems = useMemo(() => {
+  const previewItems = (() => {
     if (!selected) return [];
     const scoped = achievements.filter((achievement) => achievement.type === selected.section);
     return scoped.length ? scoped : achievements.slice(0, 3);
-  }, [achievements, selected]);
+  })();
 
   return (
-    <AppShell active="레이아웃">
+    <AppShell active="모음">
       <section className="page-section">
         <div className="portfolio-toolbar">
           <h1>레이아웃</h1>

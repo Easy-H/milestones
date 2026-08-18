@@ -6,9 +6,9 @@ export default async function TodoGoalsPage() {
   const goals = await getGoals();
 
   return (
-    <AppShell active="목표">
+    <AppShell active="진행 중">
       <section className="page-section">
-        <GoalsClient goals={goals} status="목표" title="목표" />
+        <GoalsClient goals={goals} status="진행중" title="진행 중" />
       </section>
     </AppShell>
   );

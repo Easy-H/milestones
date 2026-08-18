@@ -5,7 +5,7 @@ export type Goal = {
   tags: string[];
   progress: number;
   due: string;
-  status: string;
+  status: MilestoneStatus | string;
   todos: GoalTodo[];
   achievementDraft: {
     projectName: string;
@@ -33,6 +33,13 @@ export type Achievement = {
   area: string;
   mark: string;
   details: string[];
+};
+
+export type MilestoneStatus = "wishlist" | "in_progress" | "completed" | "paused";
+
+export type CollectionMilestone = Achievement & {
+  milestoneStatus: MilestoneStatus;
+  progress: number;
 };
 
 export type Portfolio = {
@@ -141,7 +148,7 @@ const goals: Goal[] = [
     tags: ["React", "Frontend", "AI"],
     progress: 72,
     due: "2026.09.15",
-    status: "목표",
+    status: "in_progress",
     todos: [
       {
         id: "todo-planning",
@@ -187,7 +194,7 @@ const goals: Goal[] = [
     tags: ["자격증", "CS"],
     progress: 44,
     due: "2026.10.04",
-    status: "목표",
+    status: "in_progress",
     todos: [],
     achievementDraft: {
       projectName: "정보처리기사 취득",
@@ -204,7 +211,7 @@ const goals: Goal[] = [
     tags: ["제주", "사진", "여행"],
     progress: 18,
     due: "2026.11.02",
-    status: "하고싶은일",
+    status: "wishlist",
     todos: [],
     achievementDraft: {
       projectName: "제주 동쪽 코스 기록",
@@ -217,11 +224,11 @@ const goals: Goal[] = [
   {
     id: "goal-movies",
     name: "SF 영화 30편 감상",
-    type: "취미",
+    type: "영화",
     tags: ["영화", "SF"],
     progress: 60,
     due: "2026.12.31",
-    status: "목표",
+    status: "in_progress",
     todos: [],
     achievementDraft: {
       projectName: "SF 영화 30편 감상",
@@ -317,7 +324,7 @@ const achievements: Achievement[] = [
   {
     id: "ach-book",
     name: "클린 코드 완독",
-    type: "취미",
+    type: "독서",
     achievedAt: "2026.05.18",
     status: "성취",
     tags: ["독서", "개발"],
@@ -328,7 +335,7 @@ const achievements: Achievement[] = [
   {
     id: "ach-game",
     name: "인디 게임 프로토타입 공개",
-    type: "취미",
+    type: "게임",
     achievedAt: "2026.04.22",
     status: "성취",
     tags: ["게임", "Unity", "Prototype"],
@@ -339,7 +346,7 @@ const achievements: Achievement[] = [
   {
     id: "ach-movie-dune",
     name: "듄: 파트 2 관람 기록",
-    type: "취미",
+    type: "영화",
     achievedAt: "2026.08.04",
     status: "성취",
     tags: ["영화", "SF", "문화생활"],
@@ -363,7 +370,7 @@ const achievements: Achievement[] = [
     name: "SQLD 자격 취득",
     type: "자격 / 인증",
     achievedAt: "2026.03.29",
-    status: "목표",
+    status: "성취",
     tags: ["자격증", "Database", "SQL"],
     area: "온라인",
     mark: "SQL",
@@ -382,8 +389,66 @@ const achievements: Achievement[] = [
   },
 ];
 
+const milestoneStatusLabels: Record<MilestoneStatus, string> = {
+  completed: "성취",
+  in_progress: "진행 중",
+  paused: "보류",
+  wishlist: "하고 싶은 일",
+};
+
+function normalizeMilestoneStatus(status: string): MilestoneStatus {
+  if (status === "wishlist" || status === "하고싶은일" || status === "하고 싶은 일" || status === "하고 싶음") return "wishlist";
+  if (status === "completed" || status === "성취" || status === "달성" || status === "성취한 일") return "completed";
+  if (status === "paused" || status === "보류") return "paused";
+
+  return "in_progress";
+}
+
+function goalToCollectionMilestone(goal: Goal): CollectionMilestone {
+  const milestoneStatus = normalizeMilestoneStatus(goal.status);
+
+  return {
+    achievedAt: goal.due,
+    area: "온라인",
+    details: [
+      `목표일: ${goal.due}`,
+      `진행률: ${goal.progress}%`,
+      `상태: ${milestoneStatusLabels[milestoneStatus]}`,
+      `결과: ${goal.achievementDraft.result}`,
+    ],
+    id: goal.id,
+    mark: goal.name.slice(0, 2).toUpperCase(),
+    milestoneStatus,
+    name: goal.name,
+    progress: goal.progress,
+    status: milestoneStatusLabels[milestoneStatus],
+    tags: goal.tags,
+    type: goal.type,
+  };
+}
+
+function achievementToCollectionMilestone(achievement: Achievement): CollectionMilestone {
+  return {
+    ...achievement,
+    milestoneStatus: "completed",
+    progress: 100,
+    status: "성취",
+  };
+}
+
+export function getCollectionMilestones(portfolio: Portfolio, sourceGoals = goals, sourceAchievements = achievements) {
+  const milestones = [
+    ...sourceGoals.map(goalToCollectionMilestone),
+    ...sourceAchievements.map(achievementToCollectionMilestone),
+  ];
+
+  return portfolio.tags.length
+    ? milestones.filter((milestone) => portfolio.tags.some((tag) => milestone.tags.includes(tag)))
+    : milestones;
+}
+
 const portfolios: Portfolio[] = [
-  { id: "portfolio-default", name: "기본 포트폴리오", displayName: "이지현", personaId: "persona-career", visibility: "전체 공개", layout: "Developer", achievementCount: 12, tags: ["React", "AI"], area: "서울", updatedAt: "2026.08.12" },
+  { id: "portfolio-default", name: "기본 모음", displayName: "이지현", personaId: "persona-career", visibility: "전체 공개", layout: "Developer", achievementCount: 12, tags: [], area: "서울", updatedAt: "2026.08.12" },
   { id: "portfolio-toss", name: "토스 지원용", displayName: "이지현", personaId: "persona-career", visibility: "링크 공개", layout: "Resume", achievementCount: 7, tags: ["Frontend", "Fintech"], area: "서울", updatedAt: "2026.08.10" },
   { id: "portfolio-team", name: "사이드 프로젝트 팀원 모집", displayName: "Hana Lee", personaId: "persona-career", visibility: "전체 공개", layout: "Project Focus", achievementCount: 9, tags: ["협업", "MVP"], area: "온라인", updatedAt: "2026.08.03" },
   { id: "portfolio-running", name: "러닝 모임 활동", displayName: "이지현", personaId: "persona-club", visibility: "전체 공개", layout: "Timeline", achievementCount: 5, tags: ["러닝", "서울", "운동"], area: "서울", updatedAt: "2026.08.06" },

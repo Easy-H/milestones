@@ -2,27 +2,31 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Achievement, Portfolio, PublicProfile, UserPersona } from "@/lib/mockApi";
+import { Achievement, getCollectionMilestones, Goal, Portfolio, PublicProfile, UserPersona } from "@/lib/mockApi";
 import { AppShell } from "../components/AppShell";
 import { Button } from "../components/Button";
 import { HeaderSearch } from "../components/HeaderSearch";
 import { Modal } from "../components/Modal";
 import { PortfolioCard } from "./components/PortfolioCard";
 
-const tabs = ["내 포트폴리오", "둘러보기", "관심"];
+const tabs = ["내 모음", "둘러보기", "관심"];
 
 export function PortfolioClient({
   achievements,
+  goals,
   personas,
   portfolios,
   publicProfiles,
+  initialTab = "내 모음",
 }: {
   achievements: Achievement[];
+  goals: Goal[];
+  initialTab?: string;
   personas: UserPersona[];
   portfolios: Portfolio[];
   publicProfiles: PublicProfile[];
 }) {
-  const [activeTab, setActiveTab] = useState("내 포트폴리오");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [dmProfile, setDmProfile] = useState<PublicProfile | null>(null);
   const [query, setQuery] = useState("");
   const [savedIds, setSavedIds] = useState<string[]>(publicProfiles[0] ? [publicProfiles[0].id] : []);
@@ -54,10 +58,10 @@ export function PortfolioClient({
   };
 
   return (
-    <AppShell active="포트폴리오">
+    <AppShell active={activeTab === "둘러보기" ? "둘러보기" : "모음"}>
       <section className="page-section">
         <div className="portfolio-toolbar">
-          <h1>포트폴리오</h1>
+          <h1>모음</h1>
           <HeaderSearch onChange={setQuery} value={query} />
           <div className="toolbar-right">
             <div className="tabs compact-tabs">
@@ -67,14 +71,13 @@ export function PortfolioClient({
                 </button>
               ))}
             </div>
+            {activeTab === "내 모음" ? <button className="primary" type="button">+ 모음 만들기</button> : null}
           </div>
         </div>
 
         <div className="public-grid wide recruiter-grid portfolio-list-grid">
-          {activeTab === "내 포트폴리오" ? visiblePortfolios.map((portfolio) => {
-            const includedCount = portfolio.id === "portfolio-default"
-              ? achievements.length
-              : achievements.filter((achievement) => portfolio.tags.some((tag) => achievement.tags.includes(tag))).length;
+          {activeTab === "내 모음" ? visiblePortfolios.map((portfolio) => {
+            const includedCount = getCollectionMilestones(portfolio, goals, achievements).length;
             const persona = personas.find((item) => item.id === portfolio.personaId) ?? personas[0];
 
             return (
@@ -138,9 +141,9 @@ export function PortfolioClient({
               />
             );
           })}
-          {activeTab === "내 포트폴리오" ? <button className="public-card portfolio-create-card" type="button">
+          {activeTab === "내 모음" ? <button className="public-card portfolio-create-card" type="button">
             <span>+</span>
-            <strong>태그 조건 만들기</strong>
+            <strong>모음 만들기</strong>
           </button> : null}
         </div>
         {dmProfile ? (
@@ -155,8 +158,8 @@ export function PortfolioClient({
           >
             <div className="metadata-form dm-form">
               <label>받는 사람<input readOnly value={dmProfile.name} /></label>
-              <label>포트폴리오<input readOnly value={dmProfile.role} /></label>
-              <label>메시지<textarea defaultValue={`${dmProfile.name}님의 포트폴리오를 보고 연락드립니다.`} /></label>
+              <label>모음<input readOnly value={dmProfile.role} /></label>
+              <label>메시지<textarea defaultValue={`${dmProfile.name}님의 모음을 보고 연락드립니다.`} /></label>
             </div>
           </Modal>
         ) : null}

@@ -9,7 +9,7 @@ import { Button } from "../components/Button";
 import { HeaderSearch } from "../components/HeaderSearch";
 import { StatusDropdown } from "../components/StatusDropdown";
 
-const achievementTypeOptions = ["프로젝트", "대회 / 수상", "자격 / 인증", "지역 방문", "취미", "운동 / 도전", "자유 목표"];
+const achievementTypeOptions = ["프로젝트", "대회 / 수상", "자격 / 인증", "운동 / 도전", "독서", "영화", "게임", "문화생활", "지역 방문", "여행", "기타"];
 
 export function AchievementLibraryClient({ achievements }: { achievements: Achievement[] }) {
   const [query, setQuery] = useState("");
@@ -200,7 +200,7 @@ export function AchievementLibraryClient({ achievements }: { achievements: Achie
                 isOpen={statusMenuId === achievement.id}
                 onOpenChange={setStatusMenuId}
                 onSelect={(status) => setAchievementStatuses((current) => ({ ...current, [achievement.id]: status }))}
-                options={["성취", "목표", "하고싶은일"]}
+                options={["성취", "진행 중", "하고싶은일", "보류"]}
                 value={normalizeAchievementStatus(achievementStatuses[achievement.id] ?? achievement.status)}
               >
                 <button
@@ -240,7 +240,7 @@ function buildNewAchievement(): Achievement {
 
 function normalizeAchievementStatus(status: string) {
   if (status === "활성" || status === "달성" || status === "성취한일" || status === "성취한 일") return "성취";
-  if (status === "숨김" || status === "진행 중" || status === "해야할일" || status === "해야할 일") return "목표";
+  if (status === "숨김" || status === "진행 중" || status === "해야할일" || status === "해야할 일" || status === "목표") return "진행 중";
   if (status === "보류" || status === "하고 싶음" || status === "하고싶은 일") return "하고싶은일";
 
   return status;
